@@ -16,7 +16,6 @@
 */
 
 #include <cmath>
-#include <iomanip>
 #include <iostream>
 #include <regex>
 #include <sstream>
@@ -117,7 +116,7 @@ int main() {
   while (getline(cin, line)) {
     cout << "\n";
     cout << "Postfix expression: " << in2post->convert(line) << endl;
-    cout << "Postfix evaluation: " << setprecision(4) << in2post->evaluate() << endl;
+    cout << "Postfix evaluation: " << in2post->evaluate() << endl;
     cout << "Enter infix expression ('exit' to quit): ";
   }
 
