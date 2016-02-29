@@ -8,4 +8,4 @@ test1: test_stack1.cpp stack.hpp
 	g++ test_stack1.cpp -o ts.x -std=c++11
 
 clean:
-	rm *.o test_stack.x
+	rm *.o *.x
