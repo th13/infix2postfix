@@ -15,7 +15,6 @@
 * expression components.
 */
 
-#include <cmath>
 #include <iostream>
 #include <regex>
 #include <sstream>
