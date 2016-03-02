@@ -64,17 +64,33 @@ namespace cop4530 {
 
 using namespace cop4530;
 
+/**
+* Checks if input came from redirection instead of user input.
+*
+* Works only on POSIX systems, but who codes on Windows anyway? #standardization
+*/
+bool input_redirected() {
+  return !isatty(STDIN_FILENO);
+}
+
 //------------------------------------------------------------------------------
 //                             main() method
 //------------------------------------------------------------------------------
 
-int main(int argc, char* argv[]) {
+int main() {
   string line;          // string to hold current expression we're reading in
 
   cout << "Enter infix expression ('exit' to quit): ";
 
   // Loop through each line in stdin
   while (getline(cin, line) && line != "quit") {
+    // Need to output a newline every iteration if input came from redirection
+    // as we don't have one output as we do with non-redirected input when a
+    // user hits enter.
+    if (input_redirected()) {
+      cout << endl;
+    }
+    
     cout << "Postfix expression: " << in2post::convert(line) << endl;
     cout << "Postfix evaluation: " << in2post::evaluate() << endl;
     cout << "Enter infix expression ('exit' to quit): ";
