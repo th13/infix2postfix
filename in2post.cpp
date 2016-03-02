@@ -15,10 +15,12 @@
 * expression components.
 */
 
+#include <cstdlib>
 #include <iostream>
 #include <regex>
 #include <sstream>
 #include <string>
+#include <unistd.h>
 #include <vector>
 #include "stack.h"
 
@@ -57,7 +59,7 @@ namespace cop4530 {
     */
     string evaluate();
 
-  } // end of namespace cop4530::in2post
+  } // end of namespace in2post
 
 } // end of namespace cop4530
 
@@ -90,7 +92,7 @@ int main() {
     if (input_redirected()) {
       cout << endl;
     }
-    
+
     cout << "Postfix expression: " << in2post::convert(line) << endl;
     cout << "Postfix evaluation: " << in2post::evaluate() << endl;
     cout << "Enter infix expression ('exit' to quit): ";
@@ -110,6 +112,69 @@ namespace cop4530 {
   * cop4530::in2post module definitions.
   */
   namespace in2post {
+    //--------------------------------------------------------------------------
+    //                      in2post error handling
+    //--------------------------------------------------------------------------
+
+    /**
+    * Namespace cop4530::in2post::error
+    *
+    * Contains error handling methods and error codes related to converting and
+    * evaluating infix/postfix expressions.
+    */
+    namespace error {
+      enum ErrorCode {
+        ERR_DEFAULT,
+        ERR_INVALID_TOKEN,
+        ERR_INVALID_OPERATION,
+        ERR_INVALID_OPERAND
+      };
+
+      // Encapsulates ae error into a standard format consisting of a code and a
+      // standard message for that error
+      typedef struct Error {
+        ErrorCode code;
+        string message;
+
+        // Allow an error to be initialized
+        Error(ErrorCode code, string message) {
+          this->code = code;
+          this->message = message;
+        }
+      } Error;
+
+      // List of errors with their code and message
+      vector<Error> errors = {
+        Error(ERR_DEFAULT, "An error with the in2post module occured."),
+        Error(ERR_INVALID_TOKEN, "Expression contains invalid token."),
+        Error(ERR_INVALID_OPERATION, "Supplied operation is not supported."),
+        Error(ERR_INVALID_OPERAND, "Operand must be a numerical value or proper identifier.")
+      };
+
+      /**
+      * Returns reference to error with corresponding error code.
+      */
+      const Error& get_error(ErrorCode ec) {
+        for (Error& err : errors) {
+          if (err.code == ec) {
+            return err;
+          }
+        }
+
+        // Default error
+        return errors[0];
+      }
+
+      /**
+      * "Throws" an error by outputing the error to the console and exiting the
+      * program with a non-successful status code.
+      */
+      void throw_error(ErrorCode ec) {
+        cerr << "\nError: " << get_error(ec).message << endl;
+        exit(EXIT_FAILURE);
+      }
+
+    }   // end of namespace error
 
     /**
     * This anonymous namespace encapsulates private functionality to the in2post
@@ -153,8 +218,8 @@ namespace cop4530 {
           return lhs - rhs;
         }
 
+        error::throw_error(error::ERR_INVALID_OPERATION);
         return 0.0;
-        //in2post::throw_error(in2post::err::INVALID_OPERATION);
       }
 
       string postfix_expression() {
@@ -300,7 +365,7 @@ namespace cop4530 {
           }
           // We've received an invalid token, so we should throw an error.
           else {
-            break;
+            error::throw_error(error::ERR_INVALID_TOKEN);
           }
         }
 
@@ -375,6 +440,6 @@ namespace cop4530 {
       return postfix_expression() + " = " + eval;
     }
 
-  }   // end of namespace cop4530::in2post
+  }   // end of namespace in2post
 
 }   // end of namespace cop4530
