@@ -161,6 +161,9 @@ namespace cop4530 {
         Error(ERR_INVALID_OPERAND, "Operand must be a numerical value or proper identifier.")
       };
 
+      // Reference to default error for ease of use.
+      const Error& DEFAULT_ERROR = errors[0];
+
       /**
       * Returns reference to error with corresponding error code.
       */
@@ -172,7 +175,7 @@ namespace cop4530 {
         }
 
         // Default error
-        return errors[0];
+        return DEFAULT_ERROR;
       }
 
       /**
