@@ -75,13 +75,16 @@ bool input_redirected() {
   return !isatty(STDIN_FILENO);
 }
 
-//------------------------------------------------------------------------------
-//                             main() method
-//------------------------------------------------------------------------------
-
-int main() {
+/**
+* Main program loop.
+*
+* Prompts user for an infix expression, utilizes the in2post module to convert &
+* evaluate the expression, and outputs the results to standard out.
+* Creates a program loop that reprompts the user for input until an exit symbol
+* is supplied.
+*/
+void in2post_program_loop() {
   string line;          // string to hold current expression we're reading in
-
   cout << "Enter infix expression ('exit' to quit): ";
 
   // Loop through each line in stdin
@@ -97,7 +100,14 @@ int main() {
     cout << "Postfix evaluation: " << in2post::evaluate() << endl;
     cout << "Enter infix expression ('exit' to quit): ";
   }
+}
 
+//------------------------------------------------------------------------------
+//                             main() method
+//------------------------------------------------------------------------------
+
+int main() {
+  in2post_program_loop();
   return 0;
 }
 
@@ -204,6 +214,10 @@ namespace cop4530 {
       //                 Internal (private) module methods
       //------------------------------------------------------------------------
 
+      /**
+      * Applies specified operation to the two numerical values supplied.
+      * Throws an error if operation is invalid.
+      */
       double apply_operation(const string& operation, double lhs, double rhs) {
         if (operation == "*") {
           return lhs * rhs;
@@ -222,6 +236,12 @@ namespace cop4530 {
         return 0.0;
       }
 
+      /**
+      * Returns a stringified representation of the postfix expression.
+      *
+      * NOTE: An ending space is output with the current logic.
+      * TODO: Possibly fix the above note, removing the trailing space.
+      */
       string postfix_expression() {
         string postfix_exp = "";
 
@@ -234,9 +254,11 @@ namespace cop4530 {
       }
 
 
-      // Returns true if token is a valid number or variable operand
-      // Additionally sets a flag if it is a variable so we don't try to evaluate the
-      // expression later on
+      /**
+      * Returns true if token is a valid number or variable operand.
+      * Additionally sets a flag if it is a variable so we don't try to evaluate the
+      * expression later on.
+      */
       bool is_operand(const string& token) {
         regex match_num = regex("[0-9]+(\\.?[0-9]+)?");
         regex match_var = regex("[a-zA-Z]+[0-9a-zA-Z_]*");
@@ -252,12 +274,25 @@ namespace cop4530 {
         return regex_match(token, match_num);
       }
 
+      /**
+      * Returns true if the supplied token is a valid operation as defined by
+      * a regular expression.
+      */
       bool is_operation(const string& token) {
         regex match_oper = regex("[\\+\\-\\*\\/]{1}");
 
         return regex_match(token, match_oper);
       }
 
+      /**
+      * Evaluate a numerical expression (i.e. one without variable identifiers)
+      * from a set of input tokens.
+      *
+      * Utilizes a stack to store results of all the latest subexpression
+      * calculated, until eventually only 1 element in the operand stack remains
+      * (i.e. the final value of the expression).
+      * TODO: If invalid tokens are found, throw an error.
+      */
       void evaluate_numerical_expression() {
         for (string& item : postfix_tokens) {
           if (is_operand(item)) {
@@ -274,10 +309,18 @@ namespace cop4530 {
         }
       }
 
+      /**
+      * Add operand to postfix token list.
+      */
       void process_operand(const string& oper) {
         postfix_tokens.push_back(oper);
       }
 
+      /**
+      * Adds proper postfix tokens when current input token is an operation
+      * based on the algorithm specified in the project description &
+      * requirements document.
+      */
       void process_operation(const string& oper) {
         // Push stack to postfix expression until the following conditions are
         // met
@@ -306,10 +349,16 @@ namespace cop4530 {
         operator_stack.push(oper);
       }
 
+      /**
+      * Append a group-opening character to the operator stack.
+      */
       void process_group_opened() {
         operator_stack.push("(");
       }
 
+      /**
+      * Adds all the operators in the current group to the postfix token list.
+      */
       void process_group_closed() {
         // Push operators until beginning of group (i.e. a '(') is found.
         while (operator_stack.top() != "(") {
@@ -321,7 +370,10 @@ namespace cop4530 {
         operator_stack.pop();
       }
 
-
+      /**
+      * Returns a vector of the tokens of an infix expression.
+      * Token is defined to be a space-separated string.
+      */
       vector<string> tokenize_infix_expression() {
         istringstream iss(expression);
         vector<string> infix_tokens;
@@ -334,7 +386,12 @@ namespace cop4530 {
         return infix_tokens;
       }
 
-      // Cleanup method to delete things when working with a new conversion
+      /**
+      * Cleanup method to reset the module state when working with a new
+      * expression to convert. Only needs to be called in the convert() method,
+      * as repeated calls to evaluate() should return the same result (cached
+      * from the initial call).
+      */
       void reset() {
         postfix_tokens.clear();
         operand_stack.clear();
@@ -343,6 +400,10 @@ namespace cop4530 {
         has_vars = false;
       }
 
+      /**
+      * Runs through every token in an infix expression string and generates a
+      * postfix expression as a list of tokens.
+      */
       void process_infix_tokens(const vector<string>& infix_tokens) {
         // Loop through each token from the infix expression and process it
         // according to what kind of token it is.
